@@ -2,7 +2,10 @@ package ru.andrew.fileserver.controllers;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +16,7 @@ import ru.andrew.fileserver.dao.FileUserDao;
 import ru.andrew.fileserver.entities.FileUser;
 import ru.andrew.fileserver.util.CustomHTTPError;
 import ru.andrew.fileserver.util.SessionFactoryImpl;
-
-import java.security.SecureRandom;
+import ru.andrew.fileserver.util.UsefulFunctions;
 
 @RestController
 @RequestMapping("/auth")
@@ -77,6 +79,16 @@ public class AuthController {
                 "{\"status\": 200, \"token\": \"" + token + "\"}",
                 HttpStatusCode.valueOf(200)
         );
-        // SHOULD UPDATE HASHING ALGORITHM FOR JWT TOKENS!!!!!!!!!!!!!!!!!!!!!
+    }
+
+    @GetMapping(value = "/authenticate", produces = "application/json")
+    public ResponseEntity<String> authenticate(HttpServletRequest request) {
+        boolean isAuthenticated = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (!isAuthenticated) {
+            String body = new CustomHTTPError(401, "Unauthorized").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
+        }
+        String body = "{\"status\": 200}";
+        return new ResponseEntity<>(body, HttpStatusCode.valueOf(200));
     }
 }
