@@ -21,9 +21,14 @@ public class DatabaseFile {
     @Setter
     private String filename;
 
+    @Getter
+    @Setter
+    private long date;
+
     public DatabaseFile() {}
-    public DatabaseFile(FileUser fileUser, String filename) {
+    public DatabaseFile(FileUser fileUser, String filename, long date) {
         this.fileUser = fileUser;
         this.filename = filename;
+        this.date = date;
     }
 }

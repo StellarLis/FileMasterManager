@@ -32,10 +32,10 @@ public class FileUserDao {
                 .setParameter("username", username)
                 .uniqueResult();
     }
-    public static FileUser getCandidate(String providedUsername, Session session) {
+    public static FileUser getCandidate(int userId, Session session) {
         return session
-                .createQuery("FROM FileUser WHERE username = :username", FileUser.class)
-                .setParameter("username", providedUsername)
+                .createQuery("FROM FileUser WHERE id = :userId", FileUser.class)
+                .setParameter("userId", userId)
                 .uniqueResult();
     }
 

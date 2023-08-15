@@ -6,6 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.Session;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -48,9 +49,14 @@ public class AuthController {
         fileUserDao.setPassword(hash);
         // Saving a user in database
         fileUserDao.save();
-        // Creating a JWT key
+        // Getting user id and saving it in the payload
+        candidate = fileUserDao.getCandidate();
+        JSONObject payloadJson = new JSONObject();
+        payloadJson.put("username", fileUserDao.getUsername());
+        payloadJson.put("user_id", candidate.getId());
+        String payload = payloadJson.toString();
+        // Generating a JWT token
         Algorithm algorithm = Algorithm.HMAC256(jwtKey);
-        String payload = "{\"username\": \"" + fileUserDao.getUsername() + "\"}";
         String token = JWT.create().withPayload(payload).withIssuer("auth0").sign(algorithm);
         return new ResponseEntity<>(
                 "{\"status\": 200, \"token\": \"" + token + "\"}",
@@ -76,7 +82,10 @@ public class AuthController {
         }
         // If username and password are valid, then we give a JWT token
         Algorithm algorithm = Algorithm.HMAC256(jwtKey);
-        String payload = "{\"username\": \"" + fileUserDao.getUsername() + "\"}";
+        JSONObject payloadJson = new JSONObject();
+        payloadJson.put("username", fileUserDao.getUsername());
+        payloadJson.put("user_id", candidate.getId());
+        String payload = payloadJson.toString();
         String token = JWT.create().withPayload(payload).withIssuer("auth0").sign(algorithm);
         return new ResponseEntity<>(
                 "{\"status\": 200, \"token\": \"" + token + "\"}",

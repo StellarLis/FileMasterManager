@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.andrew.fileserver.dao.DatabaseFileDao;
 import ru.andrew.fileserver.dao.FileUserDao;
@@ -25,6 +22,8 @@ import ru.andrew.fileserver.util.UsefulFunctions;
 import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Date;
+import java.util.List;
 
 @RestController()
 @RequestMapping("/files")
@@ -54,14 +53,16 @@ public class FileController {
         }
         // Retrieving username from jwt payload
         String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
-        JSONObject jsonObject = new JSONObject(payload);
-        String username = jsonObject.get("username").toString();
+        JSONObject payloadJson = new JSONObject(payload);
+        String username = payloadJson.getString("username");
+        int userId = payloadJson.getInt("user_id");
         // Setting the filename
         String filename = username + '.' + multipartFile.getOriginalFilename();
         // Saving file data to the database
         Session session = sessionFactory.getSessionFactory().openSession();
-        FileUser fileUser = FileUserDao.getCandidate(username, session);
-        DatabaseFile databaseFile = new DatabaseFile(fileUser, filename);
+        FileUser fileUser = FileUserDao.getCandidate(userId, session);
+        long date = new Date().getTime();
+        DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date);
         DatabaseFileDao databaseFileDao = new DatabaseFileDao(databaseFile, session);
         databaseFileDao.save();
         // Creating a file
@@ -73,6 +74,36 @@ public class FileController {
             String body = new CustomHTTPError(500, "IOException error").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(500));
         }
-        return new ResponseEntity<>("\"status\": 200", HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping(value = "/getFiles", produces = "application/json")
+    public ResponseEntity<String> getFilesByUsername(HttpServletRequest request) {
+        DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (decodedJWT == null) {
+            String body = new CustomHTTPError(401, "Unauthorized").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
+        }
+        // Getting userId
+        String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
+        JSONObject payloadJson = new JSONObject(payload);
+        int userId = payloadJson.getInt("user_id");
+        // Getting all files from database
+        Session session = sessionFactory.getSessionFactory().openSession();
+        FileUser fileUser = FileUserDao.getCandidate(userId, session);
+        List<DatabaseFile> filesList = DatabaseFileDao.getAllFilesByUserId(fileUser, session);
+        JSONObject resultObject = new JSONObject();
+        resultObject.put("status", 200);
+        for (DatabaseFile file : filesList) {
+            String[] filenameArr = file.getFilename().split("\\.");
+            StringBuilder newFilename = new StringBuilder();
+            for (int i = 1; i < filenameArr.length-1; i++) {
+                newFilename.append(filenameArr[i] + '.');
+            }
+            newFilename.append(filenameArr[filenameArr.length-1]);
+            file.setFilename(newFilename.toString());
+        }
+        resultObject.put("files", filesList);
+        return new ResponseEntity<>(resultObject.toString(), HttpStatusCode.valueOf(200));
     }
 }
