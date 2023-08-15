@@ -21,7 +21,7 @@ public class FileUser {
     @Setter
     private String password;
 
-    @OneToMany(mappedBy = "fileuser")
+    @OneToMany(mappedBy = "fileUser")
     private List<DatabaseFile> dbFiles;
 
     public FileUser() {}

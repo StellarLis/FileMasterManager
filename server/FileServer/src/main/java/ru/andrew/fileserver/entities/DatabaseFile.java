@@ -12,7 +12,7 @@ public class DatabaseFile {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "fileUser", nullable = false)
     @Getter
     @Setter
     private FileUser fileUser;

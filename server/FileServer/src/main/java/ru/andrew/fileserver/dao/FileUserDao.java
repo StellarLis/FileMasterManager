@@ -32,6 +32,13 @@ public class FileUserDao {
                 .setParameter("username", username)
                 .uniqueResult();
     }
+    public static FileUser getCandidate(String providedUsername, Session session) {
+        return session
+                .createQuery("FROM FileUser WHERE username = :username", FileUser.class)
+                .setParameter("username", providedUsername)
+                .uniqueResult();
+    }
+
     public void save() {
         FileUser fileUser = new FileUser(username, password);
         session.beginTransaction();
