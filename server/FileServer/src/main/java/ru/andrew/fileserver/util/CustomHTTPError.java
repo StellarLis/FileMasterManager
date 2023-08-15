@@ -15,7 +15,7 @@ public class CustomHTTPError {
         sb.append("{\"status\": ");
         sb.append(statusCode);
         sb.append(", \"message\": ");
-        sb.append("\"" + message + "\"");
+        sb.append(message);
         sb.append("}");
         return sb.toString();
     }

@@ -2,9 +2,8 @@ package ru.andrew.fileserver.controllers;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,8 @@ import ru.andrew.fileserver.entities.FileUser;
 import ru.andrew.fileserver.util.CustomHTTPError;
 import ru.andrew.fileserver.util.SessionFactoryImpl;
 import ru.andrew.fileserver.util.UsefulFunctions;
+
+import java.security.SecureRandom;
 
 @RestController
 @RequestMapping("/auth")
@@ -49,7 +50,8 @@ public class AuthController {
         fileUserDao.save();
         // Creating a JWT key
         Algorithm algorithm = Algorithm.HMAC256(jwtKey);
-        String token = JWT.create().withIssuer("auth0").sign(algorithm);
+        String payload = "{\"username\": \"" + fileUserDao.getUsername() + "\"}";
+        String token = JWT.create().withPayload(payload).withIssuer("auth0").sign(algorithm);
         return new ResponseEntity<>(
                 "{\"status\": 200, \"token\": \"" + token + "\"}",
                 HttpStatusCode.valueOf(200)
@@ -74,7 +76,8 @@ public class AuthController {
         }
         // If username and password are valid, then we give a JWT token
         Algorithm algorithm = Algorithm.HMAC256(jwtKey);
-        String token = JWT.create().withIssuer("auth0").sign(algorithm);
+        String payload = "{\"username\": \"" + fileUserDao.getUsername() + "\"}";
+        String token = JWT.create().withPayload(payload).withIssuer("auth0").sign(algorithm);
         return new ResponseEntity<>(
                 "{\"status\": 200, \"token\": \"" + token + "\"}",
                 HttpStatusCode.valueOf(200)
@@ -83,8 +86,8 @@ public class AuthController {
 
     @GetMapping(value = "/authenticate", produces = "application/json")
     public ResponseEntity<String> authenticate(HttpServletRequest request) {
-        boolean isAuthenticated = UsefulFunctions.isAuthenticated(request, jwtKey);
-        if (!isAuthenticated) {
+        DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (decodedJWT == null) {
             String body = new CustomHTTPError(401, "Unauthorized").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
