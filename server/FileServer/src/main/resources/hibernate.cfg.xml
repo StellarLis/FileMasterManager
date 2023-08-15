@@ -15,6 +15,6 @@
         <property name="hbm2ddl.auto">update</property>
 
         <mapping class="ru.andrew.fileserver.entities.FileUser" />
-
+        <mapping class="ru.andrew.fileserver.entities.DatabaseFile" />
     </session-factory>
 </hibernate-configuration>

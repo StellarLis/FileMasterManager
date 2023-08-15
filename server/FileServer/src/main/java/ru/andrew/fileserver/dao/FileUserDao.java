@@ -19,12 +19,6 @@ public class FileUserDao {
 
     private Session session;
 
-    public FileUserDao(int id, String username, String password, Session session) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.session = session;
-    }
     public FileUserDao(FileUser fileUser, Session session) {
         this.id = fileUser.getId();
         this.username = fileUser.getUsername();
