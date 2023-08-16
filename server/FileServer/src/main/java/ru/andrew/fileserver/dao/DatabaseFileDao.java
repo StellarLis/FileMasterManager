@@ -41,11 +41,24 @@ public class DatabaseFileDao {
         session.getTransaction().commit();
     }
 
-    public static List<DatabaseFile> getAllFilesByUserId(FileUser fileUser, Session session) {
+    public static List<DatabaseFile> getAllFilesByUser(FileUser fileUser, Session session) {
         return session
                 .createQuery("FROM DatabaseFile WHERE fileUser = :fileUser ORDER BY date DESC",
                         DatabaseFile.class)
                 .setParameter("fileUser", fileUser)
                 .list();
+    }
+
+    public static DatabaseFile getFileById(int fileId, Session session) {
+        return session
+                .createQuery("FROM DatabaseFile WHERE id = :fileId", DatabaseFile.class)
+                .setParameter("fileId", fileId)
+                .uniqueResult();
+    }
+
+    public static void deleteFile(DatabaseFile file, Session session) {
+        session.beginTransaction();
+        session.remove(file);
+        session.getTransaction().commit();
     }
 }
