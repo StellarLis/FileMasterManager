@@ -8,6 +8,7 @@ import org.hibernate.Session;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,7 @@ import ru.andrew.fileserver.util.CustomHTTPError;
 import ru.andrew.fileserver.util.SessionFactoryImpl;
 import ru.andrew.fileserver.util.UsefulFunctions;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 @RestController()
@@ -185,5 +184,49 @@ public class FileController {
             return new ResponseEntity<>("Server error", HttpStatusCode.valueOf(500));
         }
         return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping(value = "/download/{fileId}")
+    @ResponseBody
+    public ResponseEntity<InputStreamResource> download(
+            @PathVariable int fileId,
+            HttpServletRequest request
+    ) {
+        DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (decodedJWT == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        // Getting that file
+        Session session = sessionFactory.getSessionFactory().openSession();
+        DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
+        // Checking if database file is null
+        if (databaseFile == null) {
+            return ResponseEntity.status(404).body(null);
+        }
+        // Checking if a user is an owner of this file
+        String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
+        JSONObject payloadJson = new JSONObject(payload);
+        int userId = payloadJson.getInt("user_id");
+        if (userId != databaseFile.getFileUser().getId()) {
+            return ResponseEntity.status(403).body(null);
+        }
+        // Getting that file from storage
+        File dir = new File(path);
+        File[] matches = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return Objects.equals(name, databaseFile.getFilename());
+            }
+        });
+        // Creating InputStream and returning it
+        try {
+            File resultFile = matches[0];
+            if (resultFile == null) throw new Exception();
+            InputStream in = new FileInputStream(resultFile);
+            return ResponseEntity.ok().contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                    .body(new InputStreamResource(in));
+        } catch (Exception exception) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 }
