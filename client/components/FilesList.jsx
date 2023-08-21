@@ -2,9 +2,9 @@ import FileGrid from "./FileGrid";
 
 const FilesList = ({ filesList }) => {
     return (
-        <div>
+        <div className="grid grid-cols-6 gap-4">
             {filesList.map(file => (
-                <FileGrid file={file} />
+                <FileGrid key={file.id} file={file} />
             ))}
         </div>
     );

@@ -41,8 +41,6 @@ const Home = () => {
                 }).then(resp => {
                     setFilesArray(resp.data.files);
                     setIsLoading(false);
-                    console.log(resp.data);
-                    console.log(filesArray);
                 })
             }).catch(err => {
                 setServerError(err);

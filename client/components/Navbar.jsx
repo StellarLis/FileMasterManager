@@ -1,10 +1,13 @@
 import Link from "next/link";
 import CustomButton from "./UI/CustomButton";
+import { useRouter } from "next/router";
 
 const Navbar = () => {
+    const router = useRouter();
 
     const onQuit = () => {
-
+        localStorage.removeItem("token");
+        router.push('/login');
     }
 
     return (
@@ -12,7 +15,7 @@ const Navbar = () => {
             <Link href='/'>
                 <h1 className="text-2xl ml-5 font-bold">FileMasterManager</h1>
             </Link>
-            <CustomButton styles={"ml-auto mr-6 text-red-500"} btnText={"Quit"} />
+            <CustomButton styles={"ml-auto mr-6 text-red-500"} btnText={"Quit"} onClick={onQuit} />
         </div>
     );
 }
