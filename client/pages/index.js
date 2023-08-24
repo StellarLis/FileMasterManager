@@ -19,7 +19,7 @@ const Home = () => {
     useEffect(() => {
         axios({
             method: "GET",
-            url: "http://localhost:8080/auth/authenticate",
+            url: `http://localhost:8080/auth/authenticate`,
             validateStatus: () => true,
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
@@ -58,7 +58,7 @@ const Home = () => {
                     <LeftBar />
                     <div className="w-full h-full bg-gray-700">
                         {isLoading && (<p className="text-white">Loading...</p>)}
-                        {serverError && (<p className="text-red-500">{serverError}</p>)}
+                        {serverError && (<p className="text-red-500">{ }</p>)}
                         <FilesList filesList={filesArray} />
                     </div>
                     <RightBar />

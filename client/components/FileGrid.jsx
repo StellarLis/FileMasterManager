@@ -12,7 +12,7 @@ const FileGrid = ({ file }) => {
         <div className="bg-gray-600 text-white border-2 border-black m-2 rounded-xl flex flex-col
             items-center break-all transition-all hover:bg-gray-500 cursor-pointer"
             onClick={onClick}>
-            <Image src='/white-file-icon.png' width={100} height={150} />
+            <Image src='/white-file-icon.png' width={100} height={150} alt="white-file" />
             <p>{file.filename}</p>
         </div>
     );

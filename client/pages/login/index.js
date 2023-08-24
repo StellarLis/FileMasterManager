@@ -62,7 +62,7 @@ const Login = () => {
                             )}
                             <button className="bg-gray-700 mt-2 pt-2 pb-2 rounded-md transition hover:bg-gray-600"
                                 type='submit'>Submit</button>
-                            <p className='self-center mt-1'>Don't have an account? <Link href='/register' className='text-blue-500 transition hover:text-blue-400'>Create one!</Link></p>
+                            <p className='self-center mt-1'>Dont have an account? <Link href='/register' className='text-blue-500 transition hover:text-blue-400'>Create one!</Link></p>
                             <p className='mt-1 text-red-500 text-xl self-center font-bold'>{serverError}</p>
                         </Form>
                     )

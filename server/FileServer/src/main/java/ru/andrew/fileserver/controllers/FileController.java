@@ -4,7 +4,10 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.hibernate.Session;
+import org.hibernate.engine.jdbc.ReaderInputStream;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +26,9 @@ import ru.andrew.fileserver.util.SessionFactoryImpl;
 import ru.andrew.fileserver.util.UsefulFunctions;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 @RestController()
@@ -136,9 +142,11 @@ public class FileController {
         // Creating response
         JSONObject resultJson = new JSONObject();
         resultJson.put("status", 200);
-        List<DatabaseFile> singleList = new ArrayList<>();
-        singleList.add(databaseFile);
-        resultJson.put("file", singleList);
+	// Modifying the json object that it is not having a fileuser data
+	resultJson.put("id", databaseFile.getId());
+        resultJson.put("filename", databaseFile.getFilename());
+	resultJson.put("date", databaseFile.getDate());
+	resultJson.put("owner", databaseFile.getFileUser().getUsername());
         return new ResponseEntity<>(resultJson.toString(), HttpStatusCode.valueOf(200));
     }
 
@@ -180,7 +188,10 @@ public class FileController {
         });
         try {
             matches[0].delete();
+		System.out.println("DELETED");
         } catch (Exception exception) {
+		System.out.println("Not deleted");
+		exception.printStackTrace();
             return new ResponseEntity<>("Server error", HttpStatusCode.valueOf(500));
         }
         return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
@@ -188,9 +199,10 @@ public class FileController {
 
     @GetMapping(value = "/download/{fileId}")
     @ResponseBody
-    public ResponseEntity<InputStreamResource> download(
+    public ResponseEntity<String> download(
             @PathVariable int fileId,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
         if (decodedJWT == null) {
@@ -223,8 +235,10 @@ public class FileController {
             File resultFile = matches[0];
             if (resultFile == null) throw new Exception();
             InputStream in = new FileInputStream(resultFile);
+            response.setCharacterEncoding("UTF-8");
+            IOUtils.copy(in, response.getOutputStream());
             return ResponseEntity.ok().contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
-                    .body(new InputStreamResource(in));
+                    .body(null);
         } catch (Exception exception) {
             return ResponseEntity.status(500).body(null);
         }
