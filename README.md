@@ -27,7 +27,7 @@ This is a cloud storage service.
 - Run `mvn org.springframework.boot:spring-boot-maven-plugin:run` (make sure to be in `server/FileServer` folder)
 - Go to the `/client` folder and run `npm install`, then run `npm run dev`
   <br/>
-  Now, you should your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
+  Now, you should have your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
 
 ## Screenshots:
 
