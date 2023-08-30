@@ -1,46 +1,25 @@
 package ru.andrew.fileserver.dao;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.Session;
+import org.springframework.stereotype.Component;
 import ru.andrew.fileserver.entities.FileUser;
 
+@Component
 public class FileUserDao {
-    @Getter
-    private int id;
-
-    @Getter
-    @Setter
-    private String username;
-
-    @Getter
-    @Setter
-    private String password;
-
-    private Session session;
-
-    public FileUserDao(FileUser fileUser, Session session) {
-        this.id = fileUser.getId();
-        this.username = fileUser.getUsername();
-        this.password = fileUser.getPassword();
-        this.session = session;
-    }
-
-    public FileUser getCandidate() {
+    public FileUser getCandidateByUsername(String username, Session session) {
         return session
                 .createQuery("FROM FileUser WHERE username = :username", FileUser.class)
                 .setParameter("username", username)
                 .uniqueResult();
     }
-    public static FileUser getCandidate(int userId, Session session) {
+    public FileUser getCandidateByUserId(int userId, Session session) {
         return session
                 .createQuery("FROM FileUser WHERE id = :userId", FileUser.class)
                 .setParameter("userId", userId)
                 .uniqueResult();
     }
 
-    public void save() {
-        FileUser fileUser = new FileUser(username, password);
+    public void save(FileUser fileUser, Session session) {
         session.beginTransaction();
         session.persist(fileUser);
         session.getTransaction().commit();

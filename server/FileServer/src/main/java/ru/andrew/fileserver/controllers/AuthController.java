@@ -24,35 +24,40 @@ import java.security.SecureRandom;
 @RequestMapping("/auth")
 public class AuthController {
     private final SessionFactoryImpl sessionFactoryImpl;
+    private final FileUserDao fileUserDao;
+
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
 
     @Autowired
-    public AuthController(SessionFactoryImpl sessionFactoryImpl) {
+    public AuthController(
+            SessionFactoryImpl sessionFactoryImpl,
+            FileUserDao fileUserDao
+    ) {
         this.sessionFactoryImpl = sessionFactoryImpl;
+        this.fileUserDao = fileUserDao;
     }
 
     @PostMapping(value = "/signup", produces = "application/json")
     public ResponseEntity<String> signUp(@RequestBody FileUser fileUser) {
         Session session = sessionFactoryImpl.getSessionFactory().openSession();
         // Checking database for existing username
-        FileUserDao fileUserDao = new FileUserDao(fileUser, session);
-        FileUser candidate = fileUserDao.getCandidate();
+        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate != null) {
             String body = new CustomHTTPError(400, "This user with that username" +
                     " already exists").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
         }
-        // Generating hashed password and putting it in FileUserDao object.
+        // Generating hashed password and putting it in FileUser object.
         String hash = BCrypt.withDefaults()
-                .hashToString(6, fileUserDao.getPassword().toCharArray());
-        fileUserDao.setPassword(hash);
+                .hashToString(6, fileUser.getPassword().toCharArray());
+        fileUser.setPassword(hash);
         // Saving a user in database
-        fileUserDao.save();
+        fileUserDao.save(fileUser, session);
         // Getting user id and saving it in the payload
-        candidate = fileUserDao.getCandidate();
+        candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         JSONObject payloadJson = new JSONObject();
-        payloadJson.put("username", fileUserDao.getUsername());
+        payloadJson.put("username", fileUser.getUsername());
         payloadJson.put("user_id", candidate.getId());
         String payload = payloadJson.toString();
         // Generating a JWT token
@@ -67,15 +72,14 @@ public class AuthController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<String> login(@RequestBody FileUser fileUser) {
         Session session = sessionFactoryImpl.getSessionFactory().openSession();
-        FileUserDao fileUserDao = new FileUserDao(fileUser, session);
-        FileUser candidate = fileUserDao.getCandidate();
+        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate == null) {
             String body = new CustomHTTPError(400, "Invalid username or password").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
         }
         // A candidate has hashed password
         BCrypt.Result bcryptResult = BCrypt.verifyer()
-                .verify(fileUserDao.getPassword().toCharArray(), candidate.getPassword());
+                .verify(fileUser.getPassword().toCharArray(), candidate.getPassword());
         if (!bcryptResult.verified) {
             String body = new CustomHTTPError(400, "Invalid username or password").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
@@ -83,7 +87,7 @@ public class AuthController {
         // If username and password are valid, then we give a JWT token
         Algorithm algorithm = Algorithm.HMAC256(jwtKey);
         JSONObject payloadJson = new JSONObject();
-        payloadJson.put("username", fileUserDao.getUsername());
+        payloadJson.put("username", fileUser.getUsername());
         payloadJson.put("user_id", candidate.getId());
         String payload = payloadJson.toString();
         String token = JWT.create().withPayload(payload).withIssuer("auth0").sign(algorithm);
