@@ -34,7 +34,8 @@ import java.util.*;
 @RestController()
 @RequestMapping("/files")
 public class FileController {
-    private SessionFactoryImpl sessionFactory;
+    private final SessionFactoryImpl sessionFactory;
+    private final FileUserDao fileUserDao;
 
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
@@ -43,8 +44,12 @@ public class FileController {
     private String path;
 
     @Autowired
-    public FileController(SessionFactoryImpl sessionFactory) {
+    public FileController(
+            SessionFactoryImpl sessionFactory,
+            FileUserDao fileUserDao
+    ) {
         this.sessionFactory = sessionFactory;
+        this.fileUserDao = fileUserDao;
     }
 
     @PostMapping(value = "/upload", produces = "application/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -67,8 +72,8 @@ public class FileController {
         int randomNumber = random.nextInt(1000, 10000);
         String filename = username + '_' + randomNumber + '.' + multipartFile.getOriginalFilename();
         // Saving file data to the database
-        Session session = sessionFactory.getSessionFactory().openSession();
-        FileUser fileUser = FileUserDao.getCandidate(userId, session);
+        Session session = sessionFactory.getSession();
+        FileUser fileUser = fileUserDao.getCandidateByUserId(userId, session);
         long date = new Date().getTime();
         DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date);
         DatabaseFileDao databaseFileDao = new DatabaseFileDao(databaseFile, session);
@@ -97,8 +102,8 @@ public class FileController {
         JSONObject payloadJson = new JSONObject(payload);
         int userId = payloadJson.getInt("user_id");
         // Getting all files from database
-        Session session = sessionFactory.getSessionFactory().openSession();
-        FileUser fileUser = FileUserDao.getCandidate(userId, session);
+        Session session = sessionFactory.getSession();
+        FileUser fileUser = fileUserDao.getCandidateByUserId(userId, session);
         List<DatabaseFile> filesList = DatabaseFileDao.getAllFilesByUser(fileUser, session);
         JSONObject resultObject = new JSONObject();
         resultObject.put("status", 200);
@@ -124,7 +129,7 @@ public class FileController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
         // Getting file from database
-        Session session = sessionFactory.getSessionFactory().openSession();
+        Session session = sessionFactory.getSession();
         DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
         // Checking if databaseFile == null
         if (databaseFile == null) {
@@ -161,7 +166,7 @@ public class FileController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
         // Getting that file
-        Session session = sessionFactory.getSessionFactory().openSession();
+        Session session = sessionFactory.getSession();
         DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
         // Checking if databaseFile is null
         if (databaseFile == null) {
@@ -209,7 +214,7 @@ public class FileController {
             return ResponseEntity.status(401).body(null);
         }
         // Getting that file
-        Session session = sessionFactory.getSessionFactory().openSession();
+        Session session = sessionFactory.getSession();
         DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
         // Checking if database file is null
         if (databaseFile == null) {

@@ -40,7 +40,7 @@ public class AuthController {
 
     @PostMapping(value = "/signup", produces = "application/json")
     public ResponseEntity<String> signUp(@RequestBody FileUser fileUser) {
-        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        Session session = sessionFactoryImpl.getSession();
         // Checking database for existing username
         FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate != null) {
@@ -71,7 +71,7 @@ public class AuthController {
 
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<String> login(@RequestBody FileUser fileUser) {
-        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        Session session = sessionFactoryImpl.getSession();
         FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate == null) {
             String body = new CustomHTTPError(400, "Invalid username or password").toString();
