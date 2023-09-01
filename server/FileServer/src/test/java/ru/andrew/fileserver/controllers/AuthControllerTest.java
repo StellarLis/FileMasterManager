@@ -29,8 +29,8 @@ class AuthControllerTest {
 
     @MockBean
     private FileUserDao fileUserDao;
-    @MockBean
-    private SessionFactoryImpl sessionFactory;
+    //@MockBean
+    //private SessionFactoryImpl sessionFactory;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -38,17 +38,10 @@ class AuthControllerTest {
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
 
-    private Session session;
-
-    @BeforeEach
-    void setUp() {
-        when(sessionFactory.getSession()).thenReturn(session);
-    }
-
     @Test
     void signUp_successful_Returns200() throws Exception {
         FileUser fileUser = new FileUser("username", "password");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null).thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -59,7 +52,7 @@ class AuthControllerTest {
     @Test
     void signUp_usernameExists_Returns400() throws Exception {
         FileUser fileUser = new FileUser("username", "password");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +72,7 @@ class AuthControllerTest {
     @Test
     void signUp_usernameIs8LettersSize_Returns200() throws Exception {
         FileUser fileUser = new FileUser("username", "password");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null).thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +94,7 @@ class AuthControllerTest {
     void signUp_usernameIs28LettersSize_Returns200() throws Exception {
         String username = "1234567891234567891234567891";
         FileUser fileUser = new FileUser(username, "password");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null).thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +114,7 @@ class AuthControllerTest {
     @Test
     void signUp_passwordIs6LettersSize_Returns200() throws Exception {
         FileUser fileUser = new FileUser("username", "passwo");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null).thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -130,20 +123,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void signUp_passwordIs29LettersSize_Returns400() throws Exception {
-        String password = "12345678912345678912345678912";
-        FileUser fileUser = new FileUser("username", password);
-        mockMvc.perform(post("/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fileUser)))
-                .andExpect(status().is(400));
-    }
-
-    @Test
     void signUp_passwordIs28LettersSize_Returns200() throws Exception {
         String password = "1234567891234567891234567891";
         FileUser fileUser = new FileUser("username", password);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null).thenReturn(fileUser);
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -157,7 +140,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, fileUser.getPassword().toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +151,7 @@ class AuthControllerTest {
     @Test
     void login_userDoesNotExist_Returns400() throws Exception {
         FileUser fileUser = new FileUser("username", "password");
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(null);
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +165,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, "other_password".toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +188,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, fileUser.getPassword().toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,7 +213,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, fileUser.getPassword().toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -253,7 +236,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, fileUser.getPassword().toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -278,7 +261,7 @@ class AuthControllerTest {
         String hash = BCrypt.withDefaults()
                 .hashToString(6, fileUser.getPassword().toCharArray());
         FileUser candidate = new FileUser("username", hash);
-        when(fileUserDao.getCandidateByUsername(fileUser.getUsername(), session))
+        when(fileUserDao.getCandidateByUsername(fileUser.getUsername()))
                 .thenReturn(candidate);
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

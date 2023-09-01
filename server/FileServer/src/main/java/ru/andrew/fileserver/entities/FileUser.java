@@ -21,7 +21,7 @@ public class FileUser {
 
     @Getter
     @Setter
-    @Size(min = 6, max = 28)
+    @Size(min = 6)
     private String password;
 
     @OneToMany(mappedBy = "fileUser")

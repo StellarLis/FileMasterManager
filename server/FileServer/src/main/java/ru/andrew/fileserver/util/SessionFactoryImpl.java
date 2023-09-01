@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SessionFactoryImpl {
     @Getter
-    private final Session session;
+    private final SessionFactory sessionFactory;
 
     public SessionFactoryImpl() {
         Configuration config = new Configuration();
         config.configure();
-        session = config.buildSessionFactory().openSession();
+        sessionFactory = config.buildSessionFactory();
     }
 }

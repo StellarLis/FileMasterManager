@@ -1,64 +1,58 @@
 package ru.andrew.fileserver.dao;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.andrew.fileserver.entities.DatabaseFile;
 import ru.andrew.fileserver.entities.FileUser;
+import ru.andrew.fileserver.util.SessionFactoryImpl;
 
 import java.util.List;
 
+@Component
 public class DatabaseFileDao {
-    @Getter
-    private int id;
 
-    @Getter
-    @Setter
-    private FileUser fileUser;
+    private SessionFactoryImpl sessionFactoryImpl;
 
-    @Getter
-    @Setter
-    private String filename;
-
-    @Getter
-    @Setter
-    private long date;
-
-    private Session session;
-
-    public DatabaseFileDao(DatabaseFile databaseFile, Session session) {
-        this.id = databaseFile.getId();
-        this.fileUser = databaseFile.getFileUser();
-        this.filename = databaseFile.getFilename();
-        this.date = databaseFile.getDate();
-        this.session = session;
+    @Autowired
+    public DatabaseFileDao(SessionFactoryImpl sessionFactoryImpl) {
+        this.sessionFactoryImpl = sessionFactoryImpl;
     }
 
-    public void save() {
-        DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date);
+    public void save(DatabaseFile databaseFile) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
         session.beginTransaction();
         session.persist(databaseFile);
         session.getTransaction().commit();
+        session.close();
     }
 
-    public static List<DatabaseFile> getAllFilesByUser(FileUser fileUser, Session session) {
-        return session
+    public List<DatabaseFile> getAllFilesByUser(FileUser fileUser) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        List<DatabaseFile> result = session
                 .createQuery("FROM DatabaseFile WHERE fileUser = :fileUser ORDER BY date DESC",
                         DatabaseFile.class)
                 .setParameter("fileUser", fileUser)
                 .list();
+        session.close();
+        return result;
     }
 
-    public static DatabaseFile getFileById(int fileId, Session session) {
-        return session
+    public DatabaseFile getFileById(int fileId) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        DatabaseFile result = session
                 .createQuery("FROM DatabaseFile WHERE id = :fileId", DatabaseFile.class)
                 .setParameter("fileId", fileId)
                 .uniqueResult();
+        session.close();
+        return result;
     }
 
-    public static void deleteFile(DatabaseFile file, Session session) {
+    public void deleteFile(DatabaseFile file) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
         session.beginTransaction();
         session.remove(file);
         session.getTransaction().commit();
+        session.close();
     }
 }

@@ -28,19 +28,16 @@ import java.util.Set;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final SessionFactoryImpl sessionFactoryImpl;
     private final FileUserDao fileUserDao;
-    private Validator validator;
+    private final Validator validator;
 
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
 
     @Autowired
     public AuthController(
-            SessionFactoryImpl sessionFactoryImpl,
             FileUserDao fileUserDao
     ) {
-        this.sessionFactoryImpl = sessionFactoryImpl;
         this.fileUserDao = fileUserDao;
         // Getting validator
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -49,7 +46,6 @@ public class AuthController {
 
     @PostMapping(value = "/signup", produces = "application/json")
     public ResponseEntity<String> signUp(@RequestBody FileUser fileUser) {
-        Session session = sessionFactoryImpl.getSession();
         // Validating fileUser
         Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
         if (!constraintViolations.isEmpty()) {
@@ -57,7 +53,7 @@ public class AuthController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
         }
         // Checking database for existing username
-        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
+        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername());
         if (candidate != null) {
             String body = new CustomHTTPError(400, "This user with that username" +
                     " already exists").toString();
@@ -68,9 +64,9 @@ public class AuthController {
                 .hashToString(6, fileUser.getPassword().toCharArray());
         fileUser.setPassword(hash);
         // Saving a user in database
-        fileUserDao.save(fileUser, session);
+        fileUserDao.save(fileUser);
         // Getting user id and saving it in the payload
-        candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
+        candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername());
         JSONObject payloadJson = new JSONObject();
         payloadJson.put("username", fileUser.getUsername());
         payloadJson.put("user_id", candidate.getId());
@@ -86,7 +82,6 @@ public class AuthController {
 
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<String> login(@RequestBody FileUser fileUser) {
-        Session session = sessionFactoryImpl.getSession();
         // Validating fileUser
         Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
         if (!constraintViolations.isEmpty()) {
@@ -94,7 +89,7 @@ public class AuthController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
         }
         // Getting candidate
-        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
+        FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername());
         if (candidate == null) {
             String body = new CustomHTTPError(400, "Invalid username or password").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));

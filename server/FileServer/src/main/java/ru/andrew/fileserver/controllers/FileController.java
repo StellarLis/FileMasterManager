@@ -1,17 +1,13 @@
 package ru.andrew.fileserver.controllers;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.hibernate.Session;
-import org.hibernate.engine.jdbc.ReaderInputStream;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,16 +22,13 @@ import ru.andrew.fileserver.util.SessionFactoryImpl;
 import ru.andrew.fileserver.util.UsefulFunctions;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
-@RestController()
+@RestController
 @RequestMapping("/files")
 public class FileController {
-    private final SessionFactoryImpl sessionFactory;
     private final FileUserDao fileUserDao;
+    private final DatabaseFileDao databaseFileDao;
 
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
@@ -45,11 +38,11 @@ public class FileController {
 
     @Autowired
     public FileController(
-            SessionFactoryImpl sessionFactory,
-            FileUserDao fileUserDao
+            FileUserDao fileUserDao,
+            DatabaseFileDao databaseFileDao
     ) {
-        this.sessionFactory = sessionFactory;
         this.fileUserDao = fileUserDao;
+        this.databaseFileDao = databaseFileDao;
     }
 
     @PostMapping(value = "/upload", produces = "application/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -72,12 +65,10 @@ public class FileController {
         int randomNumber = random.nextInt(1000, 10000);
         String filename = username + '_' + randomNumber + '.' + multipartFile.getOriginalFilename();
         // Saving file data to the database
-        Session session = sessionFactory.getSession();
-        FileUser fileUser = fileUserDao.getCandidateByUserId(userId, session);
+        FileUser fileUser = fileUserDao.getCandidateByUserId(userId);
         long date = new Date().getTime();
         DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date);
-        DatabaseFileDao databaseFileDao = new DatabaseFileDao(databaseFile, session);
-        databaseFileDao.save();
+        databaseFileDao.save(databaseFile);
         // Creating a file
         File file = new File(path + File.separator + filename);
         try {
@@ -102,9 +93,8 @@ public class FileController {
         JSONObject payloadJson = new JSONObject(payload);
         int userId = payloadJson.getInt("user_id");
         // Getting all files from database
-        Session session = sessionFactory.getSession();
-        FileUser fileUser = fileUserDao.getCandidateByUserId(userId, session);
-        List<DatabaseFile> filesList = DatabaseFileDao.getAllFilesByUser(fileUser, session);
+        FileUser fileUser = fileUserDao.getCandidateByUserId(userId);
+        List<DatabaseFile> filesList = databaseFileDao.getAllFilesByUser(fileUser);
         JSONObject resultObject = new JSONObject();
         resultObject.put("status", 200);
         // Forming original filenames of each file
@@ -116,6 +106,10 @@ public class FileController {
             }
             newFilename.append(filenameArr[filenameArr.length-1]);
             file.setFilename(newFilename.toString());
+            // Generating new FileUser without hashed password
+            FileUser newFileUser = file.getFileUser();
+            newFileUser.setPassword(null);
+            file.setFileUser(newFileUser);
         }
         resultObject.put("files", filesList);
         return new ResponseEntity<>(resultObject.toString(), HttpStatusCode.valueOf(200));
@@ -129,8 +123,7 @@ public class FileController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
         // Getting file from database
-        Session session = sessionFactory.getSession();
-        DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
+        DatabaseFile databaseFile = databaseFileDao.getFileById(fileId);
         // Checking if databaseFile == null
         if (databaseFile == null) {
             String body = new CustomHTTPError(404, "File not found").toString();
@@ -147,11 +140,11 @@ public class FileController {
         // Creating response
         JSONObject resultJson = new JSONObject();
         resultJson.put("status", 200);
-	// Modifying the json object that it is not having a fileuser data
-	resultJson.put("id", databaseFile.getId());
+        // Modifying the json object that it is not having a fileuser data
+        resultJson.put("id", databaseFile.getId());
         resultJson.put("filename", databaseFile.getFilename());
-	resultJson.put("date", databaseFile.getDate());
-	resultJson.put("owner", databaseFile.getFileUser().getUsername());
+        resultJson.put("date", databaseFile.getDate());
+        resultJson.put("owner", databaseFile.getFileUser().getUsername());
         return new ResponseEntity<>(resultJson.toString(), HttpStatusCode.valueOf(200));
     }
 
@@ -166,8 +159,7 @@ public class FileController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
         // Getting that file
-        Session session = sessionFactory.getSession();
-        DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
+        DatabaseFile databaseFile = databaseFileDao.getFileById(fileId);
         // Checking if databaseFile is null
         if (databaseFile == null) {
             String body = new CustomHTTPError(404, "File not found").toString();
@@ -182,7 +174,7 @@ public class FileController {
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(403));
         }
         // Deleting a file from database
-        DatabaseFileDao.deleteFile(databaseFile, session);
+        databaseFileDao.deleteFile(databaseFile);
         // Deleting a file from storage
         File dir = new File(path);
         File[] matches = dir.listFiles(new FilenameFilter() {
@@ -214,8 +206,7 @@ public class FileController {
             return ResponseEntity.status(401).body(null);
         }
         // Getting that file
-        Session session = sessionFactory.getSession();
-        DatabaseFile databaseFile = DatabaseFileDao.getFileById(fileId, session);
+        DatabaseFile databaseFile = databaseFileDao.getFileById(fileId);
         // Checking if database file is null
         if (databaseFile == null) {
             return ResponseEntity.status(404).body(null);
