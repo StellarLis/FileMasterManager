@@ -29,8 +29,6 @@ class AuthControllerTest {
 
     @MockBean
     private FileUserDao fileUserDao;
-    //@MockBean
-    //private SessionFactoryImpl sessionFactory;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
