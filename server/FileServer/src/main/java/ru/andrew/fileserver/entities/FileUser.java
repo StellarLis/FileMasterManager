@@ -1,6 +1,7 @@
 package ru.andrew.fileserver.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,10 +16,12 @@ public class FileUser {
 
     @Getter
     @Setter
+    @Size(min = 8, max = 28)
     private String username;
 
     @Getter
     @Setter
+    @Size(min = 6, max = 28)
     private String password;
 
     @OneToMany(mappedBy = "fileUser")

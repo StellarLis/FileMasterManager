@@ -5,6 +5,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.hibernate.Session;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +23,14 @@ import ru.andrew.fileserver.util.SessionFactoryImpl;
 import ru.andrew.fileserver.util.UsefulFunctions;
 
 import java.security.SecureRandom;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final SessionFactoryImpl sessionFactoryImpl;
     private final FileUserDao fileUserDao;
+    private Validator validator;
 
     @Value("${JWT_PRIVATE_KEY}")
     private String jwtKey;
@@ -36,11 +42,20 @@ public class AuthController {
     ) {
         this.sessionFactoryImpl = sessionFactoryImpl;
         this.fileUserDao = fileUserDao;
+        // Getting validator
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @PostMapping(value = "/signup", produces = "application/json")
     public ResponseEntity<String> signUp(@RequestBody FileUser fileUser) {
         Session session = sessionFactoryImpl.getSession();
+        // Validating fileUser
+        Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
+        if (!constraintViolations.isEmpty()) {
+            String body = new CustomHTTPError(400, "Bad Request. Try again").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
+        }
         // Checking database for existing username
         FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate != null) {
@@ -72,6 +87,13 @@ public class AuthController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<String> login(@RequestBody FileUser fileUser) {
         Session session = sessionFactoryImpl.getSession();
+        // Validating fileUser
+        Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
+        if (!constraintViolations.isEmpty()) {
+            String body = new CustomHTTPError(400, "Bad Request. Try again").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(400));
+        }
+        // Getting candidate
         FileUser candidate = fileUserDao.getCandidateByUsername(fileUser.getUsername(), session);
         if (candidate == null) {
             String body = new CustomHTTPError(400, "Invalid username or password").toString();
