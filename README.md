@@ -16,6 +16,7 @@ This is a cloud storage service.
 - PostgreSQL database
 - Hibernate ORM
 - JWT tokens
+- JUnit (for Unit-testing)
 
 ## How to run this app on your computer:
 
@@ -26,6 +27,7 @@ This is a cloud storage service.
 - Open `src/main/resources/hibernate.cfg.xml` file and provide your database username, password, name of your PostgreSQL database
 - Run `mvn org.springframework.boot:spring-boot-maven-plugin:run` (make sure to be in `server/FileServer` folder)
 - Go to the `/client` folder and run `npm install`, then run `npm run dev`
+  <br/>
   <br/>
   Now, you should have your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
 
