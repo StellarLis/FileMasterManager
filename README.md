@@ -12,7 +12,9 @@ This is a cloud storage service.
 
 ## Backend:
 
-- Spring Framework
+- Spring Core
+- Spring MVC
+- Spring Boot
 - PostgreSQL database
 - Hibernate ORM
 - JWT tokens
