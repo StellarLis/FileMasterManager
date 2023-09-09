@@ -20,18 +20,12 @@ This is a cloud storage service.
 - JWT tokens
 - JUnit (for Unit-testing)
 
-## How to run this app on your computer:
-
+## How to run this app using **Docker**:
 - Clone this repository
-- Make sure you have opened PostgreSQL instance on your computer on port **5432**
-- Go to the `/server/FileServer` folder
-- Create new folder named `userfiles`
-- Open `src/main/resources/hibernate.cfg.xml` file and provide your database username, password, name of your PostgreSQL database
-- Run `mvn org.springframework.boot:spring-boot-maven-plugin:run` (make sure to be in `server/FileServer` folder)
-- Go to the `/client` folder and run `npm install`, then run `npm run dev`
-  <br/>
-  <br/>
-  Now, you should have your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
+- Go to `server/FileServer` and create a folder named `userfiles`
+- Go to the root of the project and run `docker-compose up -d` (make sure you have Docker installed)
+
+#### Now, you should have your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
 
 ## Screenshots:
 
