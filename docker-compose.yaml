@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  java_api_server:
+    build: ./server/FileServer
+    container_name: java_server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql_db
+    networks:
+      - app_net
+  frontend_app:
+    build: ./client
+    container_name: frontend_app
+    ports:
+      - "3000:3000"
+    environment:
+      - API_HOSTNAME=http://localhost:8080
+    stdin_open: true
+    tty: true
+    depends_on:
+      - java_api_server
+    networks:
+      - app_net
+  postgresql_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=fmm_db
+    ports:
+      - "5432:5432"
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge

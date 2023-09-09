@@ -21,7 +21,7 @@ const Login = () => {
     const [serverError, setServerError] = useState(null);
 
     const login = (username, password) => {
-        axios.post(`http://localhost:8080/auth/login`, {
+        axios.post(`${process.env.API_HOSTNAME}/auth/login`, {
             username, password
         }).then(response => {
             const token = response.data.token;

@@ -20,7 +20,7 @@ const Register = () => {
     const router = useRouter();
     const [serverError, setServerError] = useState(null);
     const register = (username, password) => {
-        axios.post(`http://localhost:8080/auth/signup`, {
+        axios.post(`${process.env.API_HOSTNAME}/auth/signup`, {
             username, password
         }).then(response => {
             const token = response.data.token;

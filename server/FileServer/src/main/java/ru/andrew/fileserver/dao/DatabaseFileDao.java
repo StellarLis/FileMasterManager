@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class DatabaseFileDao {
 
-    private SessionFactoryImpl sessionFactoryImpl;
+    private final SessionFactoryImpl sessionFactoryImpl;
 
     @Autowired
     public DatabaseFileDao(SessionFactoryImpl sessionFactoryImpl) {

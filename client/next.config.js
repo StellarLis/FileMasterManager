@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  env: {
+    API_HOSTNAME: process.env.API_HOSTNAME,
+  },
   async headers() {
     return [
       {

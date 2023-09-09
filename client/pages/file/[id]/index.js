@@ -16,7 +16,7 @@ const FilePage = () => {
     useEffect(() => {
         axios({
             method: "GET",
-            url: `http://localhost:8080/files/getFileById/${id}`,
+            url: `${process.env.API_HOSTNAME}/files/getFileById/${id}`,
             validateStatus: () => true,
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
@@ -41,7 +41,7 @@ const FilePage = () => {
     const onDownload = () => {
         const myHeaders = new Headers();
         myHeaders.append('Authorization', "Bearer " + localStorage.getItem("token"));
-        fetch(`http://localhost:8080/files/download/${id}`, {
+        fetch(`${process.env.API_HOSTNAME}/files/download/${id}`, {
             method: "GET",
             headers: myHeaders
         }).then(response => response.blob())
@@ -60,7 +60,7 @@ const FilePage = () => {
     const onDelete = () => {
         axios({
             method: "DELETE",
-            url: `http://localhost:8080/files/deleteFileById/${id}`,
+            url: `${process.env.API_HOSTNAME}/files/deleteFileById/${id}`,
             validateStatus: () => true,
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")

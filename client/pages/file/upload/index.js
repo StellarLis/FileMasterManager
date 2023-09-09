@@ -13,7 +13,7 @@ const UploadPage = () => {
     useEffect(() => {
         axios({
             method: "GET",
-            url: "http://localhost:8080/auth/authenticate",
+            url: `${process.env.API_HOSTNAME}/auth/authenticate`,
             validateStatus: () => true,
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
@@ -40,7 +40,7 @@ const UploadPage = () => {
     const onUpload = () => {
         const formData = new FormData();
         formData.append("multipartFile", selectedFile);
-        axios.post(`http://localhost:8080/files/upload`, formData, {
+        axios.post(`${process.env.API_HOSTNAME}/files/upload`, formData, {
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
             }

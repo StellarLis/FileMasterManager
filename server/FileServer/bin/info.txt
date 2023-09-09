@@ -1,0 +1,2 @@
+Run java project:
+mvn org.springframework.boot:spring-boot-maven-plugin:run

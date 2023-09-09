@@ -19,7 +19,7 @@ const Home = () => {
     useEffect(() => {
         axios({
             method: "GET",
-            url: `http://localhost:8080/auth/authenticate`,
+            url: `${process.env.API_HOSTNAME}/auth/authenticate`,
             validateStatus: () => true,
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
@@ -33,7 +33,7 @@ const Home = () => {
                 setIsLoading(true);
                 axios({
                     method: "GET",
-                    url: "http://localhost:8080/files/getFiles",
+                    url: `${process.env.API_HOSTNAME}/files/getFiles`,
                     validateStatus: () => true,
                     headers: {
                         'Authorization': "Bearer " + localStorage.getItem("token")
