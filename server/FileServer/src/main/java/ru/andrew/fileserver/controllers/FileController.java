@@ -67,7 +67,7 @@ public class FileController {
         // Saving file data to the database
         FileUser fileUser = fileUserDao.getCandidateByUserId(userId);
         long date = new Date().getTime();
-        DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date);
+        DatabaseFile databaseFile = new DatabaseFile(fileUser, filename, date, true);
         databaseFileDao.save(databaseFile);
         // Creating a file
         File file = new File(path + File.separator + filename);
@@ -129,6 +129,15 @@ public class FileController {
             String body = new CustomHTTPError(404, "File not found").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(404));
         }
+        // Get user_id from JWT
+        String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
+        JSONObject payloadJson = new JSONObject(payload);
+        int userId = payloadJson.getInt("user_id");
+        // Abort if you are not an owner and it's a private file
+        if (databaseFile.isPrivate() && databaseFile.getFileUser().getId() != userId) {
+            String body = new CustomHTTPError(403, "This file is private").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(403));
+        }
         // Forming original filename
         String[] filenameArr = databaseFile.getFilename().split("\\.");
         StringBuilder newFilename = new StringBuilder();
@@ -145,6 +154,7 @@ public class FileController {
         resultJson.put("filename", databaseFile.getFilename());
         resultJson.put("date", databaseFile.getDate());
         resultJson.put("owner", databaseFile.getFileUser().getUsername());
+        resultJson.put("isPrivate", databaseFile.isPrivate());
         return new ResponseEntity<>(resultJson.toString(), HttpStatusCode.valueOf(200));
     }
 
@@ -215,7 +225,7 @@ public class FileController {
         String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
         JSONObject payloadJson = new JSONObject(payload);
         int userId = payloadJson.getInt("user_id");
-        if (userId != databaseFile.getFileUser().getId()) {
+        if (databaseFile.isPrivate() && userId != databaseFile.getFileUser().getId()) {
             return ResponseEntity.status(403).body(null);
         }
         // Getting that file from storage
@@ -238,5 +248,38 @@ public class FileController {
         } catch (Exception exception) {
             return ResponseEntity.status(500).body(null);
         }
+    }
+
+    @PutMapping(value = "/changePrivacy/{fileId}", produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> changePrivacy(
+            @PathVariable int fileId,
+            @RequestParam boolean newPrivacyOption,
+            HttpServletRequest request
+    ) {
+        DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (decodedJWT == null) {
+            String body = new CustomHTTPError(401, "Unauthorized").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
+        }
+        // Getting that file
+        DatabaseFile databaseFile = databaseFileDao.getFileById(fileId);
+        // Checking if databaseFile is null
+        if (databaseFile == null) {
+            String body = new CustomHTTPError(404, "File not found").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(404));
+        }
+        // Checking if a user is an owner of this file
+        String payload = new String(Base64.getUrlDecoder().decode(decodedJWT.getPayload()));
+        JSONObject payloadJson = new JSONObject(payload);
+        int userId = payloadJson.getInt("user_id");
+        if (userId != databaseFile.getFileUser().getId()) {
+            String body = new CustomHTTPError(403, "You are not an owner of this file").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(403));
+        }
+        // Change privacy
+        databaseFile.setPrivate(newPrivacyOption);
+        databaseFileDao.updateFile(databaseFile);
+        return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
     }
 }

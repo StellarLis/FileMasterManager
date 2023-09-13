@@ -55,4 +55,12 @@ public class DatabaseFileDao {
         session.getTransaction().commit();
         session.close();
     }
+
+    public void updateFile(DatabaseFile file) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        session.beginTransaction();
+        session.merge(file);
+        session.getTransaction().commit();
+        session.close();
+    }
 }
