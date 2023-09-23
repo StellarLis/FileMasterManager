@@ -195,10 +195,8 @@ public class FileController {
         });
         try {
             matches[0].delete();
-		System.out.println("DELETED");
         } catch (Exception exception) {
-		System.out.println("Not deleted");
-		exception.printStackTrace();
+            exception.printStackTrace();
             return new ResponseEntity<>("Server error", HttpStatusCode.valueOf(500));
         }
         return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
@@ -281,5 +279,39 @@ public class FileController {
         databaseFile.setPrivate(newPrivacyOption);
         databaseFileDao.updateFile(databaseFile);
         return new ResponseEntity<>("{\"status\": 200}", HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping(value = "/search/{textInput}", produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> search(
+            @PathVariable String textInput,
+            @RequestParam int origin,
+            HttpServletRequest request
+    ) {
+        DecodedJWT decodedJWT = UsefulFunctions.isAuthenticated(request, jwtKey);
+        if (decodedJWT == null) {
+            String body = new CustomHTTPError(401, "Unauthorized").toString();
+            return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
+        }
+        //
+        // Searching for files
+        List<DatabaseFile> filesList = databaseFileDao.searchFiles(origin, textInput);
+        JSONObject resultJson = new JSONObject();
+        resultJson.put("status", 200);
+        for (DatabaseFile file : filesList) {
+            String[] filenameArr = file.getFilename().split("\\.");
+            StringBuilder newFilename = new StringBuilder();
+            for (int i = 1; i < filenameArr.length-1; i++) {
+                newFilename.append(filenameArr[i] + '.');
+            }
+            newFilename.append(filenameArr[filenameArr.length-1]);
+            file.setFilename(newFilename.toString());
+            // Generating new FileUser without hashed password
+            FileUser newFileUser = file.getFileUser();
+            newFileUser.setPassword(null);
+            file.setFileUser(newFileUser);
+        }
+        resultJson.put("files", filesList);
+        return new ResponseEntity<>(resultJson.toString(), HttpStatusCode.valueOf(200));
     }
 }

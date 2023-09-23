@@ -63,4 +63,17 @@ public class DatabaseFileDao {
         session.getTransaction().commit();
         session.close();
     }
+
+    public List<DatabaseFile> searchFiles(int origin, String textInput) {
+        int limit = 10;
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        List<DatabaseFile> result = session
+                .createQuery("FROM DatabaseFile WHERE isPrivate = false AND filename = :textInput ORDER BY date DESC", DatabaseFile.class)
+                .setParameter("textInput", textInput)
+                .setFirstResult(origin)
+                .setMaxResults(limit)
+                .list();
+        session.close();
+        return result;
+    }
 }
