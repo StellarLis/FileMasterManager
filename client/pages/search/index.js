@@ -13,6 +13,7 @@ const Search = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [searchText, setSearchText] = useState("");
+  const [filesList, setFilesList] = useState([]);
 
   useEffect(() => {
     axios({
@@ -28,6 +29,7 @@ const Search = () => {
         return null;
       }
     });
+    // Make a search request here
   }, []);
 
   return (
@@ -52,7 +54,10 @@ const Search = () => {
                 Search
               </button>
             </div>
-            <SearchFilesList />
+            {serverError && (
+              <p className="text-red-500 text-xl">{serverError}</p>
+            )}
+            <SearchFilesList filesList={filesList} />
           </div>
           <RightBar />
         </div>
