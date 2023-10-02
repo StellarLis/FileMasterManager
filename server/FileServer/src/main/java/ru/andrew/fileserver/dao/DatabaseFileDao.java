@@ -7,6 +7,7 @@ import ru.andrew.fileserver.entities.DatabaseFile;
 import ru.andrew.fileserver.entities.FileUser;
 import ru.andrew.fileserver.util.SessionFactoryImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -54,5 +55,25 @@ public class DatabaseFileDao {
         session.remove(file);
         session.getTransaction().commit();
         session.close();
+    }
+
+    public void updateFile(DatabaseFile file) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        session.beginTransaction();
+        session.merge(file);
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    public List<DatabaseFile> searchFiles(int origin, String textInput) {
+        Session session = sessionFactoryImpl.getSessionFactory().openSession();
+        List<DatabaseFile> result = session
+                .createQuery("FROM DatabaseFile WHERE filename LIKE :input AND isPrivate = false ORDER BY date DESC", DatabaseFile.class)
+                .setParameter("input", '%'+textInput+'%')
+                .setFirstResult(origin)
+                .setMaxResults(10)
+                .list();
+        session.close();
+        return result;
     }
 }

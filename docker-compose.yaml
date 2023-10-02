@@ -24,7 +24,6 @@ services:
       - app_net
   postgresql_db:
     image: postgres:latest
-    restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
