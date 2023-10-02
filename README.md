@@ -21,6 +21,7 @@ This is a cloud storage service.
 - JUnit (for Unit-testing)
 
 ## How to run this app using **Docker**:
+
 - Clone this repository
 - Go to `server/FileServer` and create a folder named `userfiles`
 - Go to the root of the project and run `docker-compose up -d` (make sure you have Docker installed)
@@ -29,5 +30,6 @@ This is a cloud storage service.
 
 ## Screenshots:
 
-![Screenshot_1](https://github.com/StellarLis/WebBlog/assets/86295320/80d2be5b-c597-4828-95c0-32432ea1429a)
-![Screenshot_2](https://github.com/StellarLis/WebBlog/assets/86295320/25b80766-eed3-45a7-bfa0-db5e9235307a)
+![Screenshot_1](https://github.com/StellarLis/FileMasterManager/assets/86295320/cdc6d360-cd79-45fe-b0e5-99980072278d)
+![Screenshot_2](https://github.com/StellarLis/FileMasterManager/assets/86295320/41c1a800-8e08-4009-85f7-ad7306679ddc)
+![Screenshot_3](https://github.com/StellarLis/FileMasterManager/assets/86295320/b82a24a6-2d69-4b71-a2c4-7047d3a7033c)
