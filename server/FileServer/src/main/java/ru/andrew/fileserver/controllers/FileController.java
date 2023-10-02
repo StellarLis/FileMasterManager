@@ -293,7 +293,6 @@ public class FileController {
             String body = new CustomHTTPError(401, "Unauthorized").toString();
             return new ResponseEntity<>(body, HttpStatusCode.valueOf(401));
         }
-        //
         // Searching for files
         List<DatabaseFile> filesList = databaseFileDao.searchFiles(origin, textInput);
         JSONObject resultJson = new JSONObject();
