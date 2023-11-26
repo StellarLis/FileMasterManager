@@ -1,41 +1,30 @@
 package ru.andrew.fileserver.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DatabaseFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    private int id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "fileUser", nullable = false)
-    @Getter
-    @Setter
     private FileUser fileUser;
 
-    @Getter
-    @Setter
     private String filename;
 
-    @Getter
-    @Setter
     @ColumnDefault("true")
     private boolean isPrivate;
 
-    @Getter
-    @Setter
     private long date;
-
-    public DatabaseFile() {}
-    public DatabaseFile(FileUser fileUser, String filename, long date, boolean isPrivate) {
-        this.fileUser = fileUser;
-        this.filename = filename;
-        this.date = date;
-        this.isPrivate = isPrivate;
-    }
 }

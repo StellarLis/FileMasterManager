@@ -1,11 +1,7 @@
-package ru.andrew.fileserver.controllers;
+package ru.andrew.fileserver.controller;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.Session;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.andrew.fileserver.dao.FileUserDao;
 import ru.andrew.fileserver.entities.FileUser;
-import ru.andrew.fileserver.util.SessionFactoryImpl;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
