@@ -3,8 +3,6 @@ package ru.andrew.fileserver.service;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.andrew.fileserver.configuration.JwtUtils;
 import ru.andrew.fileserver.dto.AuthResponse;
-import ru.andrew.fileserver.dto.AuthResponseWithToken;
 import ru.andrew.fileserver.entities.FileUser;
 import ru.andrew.fileserver.repository.FileUserRepository;
 
@@ -33,13 +30,15 @@ public class AuthService implements UserDetailsService {
         // Validating fileUser
         Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
         if (!constraintViolations.isEmpty()) {
-            AuthResponse authResponse = new AuthResponse("Bad Request. Try again");
+            AuthResponse authResponse = new AuthResponse(
+                    "Bad Request. Try again", null);
             return ResponseEntity.status(400).body(authResponse);
         }
         // Checking database for existing username
         FileUser candidate = fileUserRepository.findUserByUsername(fileUser.getUsername());
         if (candidate != null) {
-            AuthResponse authResponse = new AuthResponse("This user with that username already exists");
+            AuthResponse authResponse = new AuthResponse(
+                    "This user with that username already exists", null);
             return ResponseEntity.status(400).body(authResponse);
         }
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -52,7 +51,7 @@ public class AuthService implements UserDetailsService {
                 new ArrayList<>()
         );
         String token = jwtUtils.generateToken(userDetails);
-        AuthResponseWithToken response = new AuthResponseWithToken(
+        AuthResponse response = new AuthResponse(
                 "Signed up successfully", token);
         return ResponseEntity.ok().body(response);
     }
@@ -61,13 +60,15 @@ public class AuthService implements UserDetailsService {
         // Validating fileUser
         Set<ConstraintViolation<FileUser>> constraintViolations = validator.validate(fileUser);
         if (!constraintViolations.isEmpty()) {
-            AuthResponse authResponse = new AuthResponse("Bad Request. Try again");
+            AuthResponse authResponse = new AuthResponse(
+                    "Bad Request. Try again", null);
             return ResponseEntity.status(400).body(authResponse);
         }
         // Getting candidate
         FileUser candidate = fileUserRepository.findUserByUsername(fileUser.getUsername());
         if (candidate == null) {
-            AuthResponse authResponse = new AuthResponse("Invalid username or password");
+            AuthResponse authResponse = new AuthResponse(
+                    "Invalid username or password", null);
             return ResponseEntity.status(400).body(authResponse);
         }
         // A candidate has hashed password
@@ -76,7 +77,8 @@ public class AuthService implements UserDetailsService {
                 candidate.getPassword()
         );
         if (!isPasswordCorrect) {
-            AuthResponse authResponse = new AuthResponse("Invalid username or password");
+            AuthResponse authResponse = new AuthResponse(
+                    "Invalid username or password", null);
             return ResponseEntity.status(400).body(authResponse);
         }
         // If username and password are valid, then we give a JWT token
@@ -84,9 +86,8 @@ public class AuthService implements UserDetailsService {
                 candidate.getPassword(),
                 new ArrayList<>());
         String token = jwtUtils.generateToken(userDetails);
-        AuthResponseWithToken authResponse = new AuthResponseWithToken(
-                "Logged in successfully", token
-        );
+        AuthResponse authResponse = new AuthResponse(
+                "Logged in successfully", token);
         return ResponseEntity.ok().body(authResponse);
     }
 

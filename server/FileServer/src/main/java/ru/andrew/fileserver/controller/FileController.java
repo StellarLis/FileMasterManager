@@ -1,5 +1,6 @@
 package ru.andrew.fileserver.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -13,10 +14,11 @@ import ru.andrew.fileserver.service.FileService;
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class FileController {
     private final FileService fileService;
 
-    @PostMapping(value = "/upload", produces = "application/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileResponse> upload(
             @RequestParam MultipartFile multipartFile
     ) {

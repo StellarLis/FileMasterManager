@@ -9,6 +9,8 @@ services:
       - postgresql_db
     networks:
       - app_net
+    volumes:
+      - ./server/FileServer:/app
   frontend_app:
     build: ./client
     container_name: frontend_app
@@ -22,6 +24,8 @@ services:
       - java_api_server
     networks:
       - app_net
+    volumes:
+      - ./client:/app
   postgresql_db:
     image: postgres:latest
     environment:

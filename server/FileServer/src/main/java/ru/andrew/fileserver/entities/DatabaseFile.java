@@ -1,5 +1,6 @@
 package ru.andrew.fileserver.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class DatabaseFile {
 
     @ManyToOne
     @JoinColumn(name = "fileUser", nullable = false)
+    @JsonIgnore
     private FileUser fileUser;
 
     private String filename;

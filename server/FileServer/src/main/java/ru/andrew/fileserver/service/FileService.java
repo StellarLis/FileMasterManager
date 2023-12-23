@@ -1,13 +1,10 @@
 package ru.andrew.fileserver.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -159,7 +156,8 @@ public class FileService {
         String username = this.getUsername();
         if (databaseFile.isPrivate() &&
                 !databaseFile.getFileUser().getUsername().equals(username)) {
-            return ResponseEntity.status(403).body(null);
+            log.debug("File is private and you are not an owner.");
+            return ResponseEntity.status(405).body(null);
         }
         // Getting that file from storage
         File dir = new File(path);

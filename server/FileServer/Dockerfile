@@ -1,8 +1,7 @@
 FROM openjdk:20
-FROM maven:latest
-WORKDIR /app
-COPY . .
-RUN mvn clean compile assembly:single
 WORKDIR /app/target
+COPY ./target/FileServer-jar-with-dependencies.jar .
+WORKDIR /app
+COPY ./userfiles .
 EXPOSE 8080
-CMD ["java", "-jar", "FileServer-jar-with-dependencies.jar"]
+CMD ["java", "-jar", "./target/FileServer-jar-with-dependencies.jar"]
