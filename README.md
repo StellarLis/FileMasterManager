@@ -15,10 +15,10 @@ This is a cloud storage service.
 - Spring Core
 - Spring MVC
 - Spring Boot
+- Spring Data JPA
+- Spring Security
 - PostgreSQL database
-- Hibernate ORM
 - JWT tokens
-- JUnit (for Unit-testing)
 
 ## How to run this app using **Docker**:
 
