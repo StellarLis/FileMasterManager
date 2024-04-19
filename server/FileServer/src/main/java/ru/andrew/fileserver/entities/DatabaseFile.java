@@ -23,6 +23,8 @@ public class DatabaseFile {
     @JsonIgnore
     private FileUser fileUser;
 
+    private String owner;
+
     private String filename;
 
     @ColumnDefault("true")

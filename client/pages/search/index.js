@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import LeftBar from "@/components/LeftBar";
 import RightBar from "@/components/RightBar";
 import SearchFilesList from "@/components/SearchFilesList";
-import useScroll from "@/hooks/useScroll";
 
 const Search = () => {
   const router = useRouter();
@@ -14,7 +13,6 @@ const Search = () => {
 
   const [searchText, setSearchText] = useState("");
   const [filesList, setFilesList] = useState([]);
-  const [origin, setOrigin] = useState(0);
 
   const parentRef = useRef();
   const childRef = useRef();
@@ -38,14 +36,13 @@ const Search = () => {
   function onSearch() {
     axios({
       method: "GET",
-      url: `${process.env.API_HOSTNAME}/files/search/${searchText}?origin=${origin}`,
+      url: `${process.env.API_HOSTNAME}/files/search/${searchText}`,
       validateStatus: () => true,
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),
       },
     }).then((resp) => {
-      setFilesList(resp.data.files);
-      setOrigin(origin + 1);
+      setFilesList(resp.data.filesList);
     });
   }
 

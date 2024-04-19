@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface DatabaseFileRepository extends JpaRepository<DatabaseFile, Long> {
     @Query(
-            value = "SELECT * FROM DatabaseFile db WHERE db.filename LIKE ?1 AND isPrivate" +
+            value = "SELECT * FROM database_file db WHERE db.filename LIKE ?1 AND is_private" +
                     " = false ORDER BY date DESC",
             nativeQuery = true
     )

@@ -44,7 +44,7 @@ public class FileService {
         // Saving file data to the database
         FileUser fileUser = fileUserRepository.findUserByUsername(username);
         long date = new Date().getTime();
-        DatabaseFile databaseFile = new DatabaseFile(null, fileUser, filename, true, date);
+        DatabaseFile databaseFile = new DatabaseFile(null, fileUser, fileUser.getUsername(), filename, true, date);
         databaseFileRepository.save(databaseFile);
         // Creating a file
         File file = new File(path + File.separator + filename);
