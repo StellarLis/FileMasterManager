@@ -23,8 +23,7 @@ This is a cloud storage service.
 ## How to run this app using **Docker**:
 
 - Clone this repository
-- Go to `server/FileServer` and create a folder named `userfiles`
-- Go to the root of the project and run `docker-compose up -d` (make sure you have Docker installed)
+- Run `docker-compose up -d` (make sure you have Docker installed)
 
 #### Now, you should have your app opened on port 3000, so now you can open http://localhost:3000/ link in your browser.
 
